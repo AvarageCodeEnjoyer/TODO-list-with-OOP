@@ -1,8 +1,7 @@
 const form = document.querySelector("[name='data-form']")
 const input = document.querySelector("[name='data-input']")
 const lists = document.querySelector("[name='data-lists']")
-// let todoARR = []
-
+let filteredARR = []
 
 
 /* ------------------------ Construct list item data ------------------------ */
@@ -23,18 +22,18 @@ class Storage{
   }
 
   static getStorage(){
-    let storage = localStorage.getItem('todo') === null ? [] : JSON.parse(localStorage.getItem('todo'))
+    let storage = localStorage.getItem('todo') === "" ? [] : JSON.parse(localStorage.getItem('todo'))
     return storage
   }
 }
 
-let todoARR = Storage.getStorage()
-
 /* -------------------------- Display data in list -------------------------- */
 
 class UI {
+  static todoARR = Storage.getStorage()
+
   static displayData(){
-    const displayData = todoARR.map(item => { 
+    const displayData = UI.todoARR.map(item => { 
       return `
       <div class="todo">
         <p>${item.todo}</p>
@@ -53,20 +52,24 @@ class UI {
     lists.addEventListener('click', e => {
       if(e.target.classList.contains("remove")){
         e.target.parentElement.remove()
+        let btnId = e.target.dataset.id
+        console.log(btnId)
+        UI.removeArrayTodo(btnId)
       }
-      let btnId = e.target.dataset.id
-      console.log(todoARR)
-      UI.removeArrayTodo(btnId)
     })
   }
 
-  static removeArrayTodo(id){
-    todoARR = todoARR.filter((item) => item.id !== id)
-    // filtered = Storage.addToStorage()
-    console.log(todoARR)
-
+  static removeArrayTodo(btnId){
+    UI.todoARR = UI.todoARR.filter(item => item.id !== btnId)
+    Storage.addToStorage(UI.todoARR)
+    UI.displayData()
+    console.log(btnId)
+    console.log(UI.todoARR)
   }
 }
+
+let todoARR = UI.todoARR
+  
 
 /* -------------- Add form event listener for static functions -------------- */
 
@@ -74,9 +77,10 @@ form.addEventListener('submit', e => {
   e.preventDefault()
   let id = Math.random() * 17
   const item = new ToDo(id, input.value)
-  todoARR = [...todoARR, item]
+  UI.todoARR = [...UI.todoARR, item]
   UI.displayData()
-  UI.removeToDo()
   UI.clearInput()
-  Storage.addToStorage(todoARR)
+  Storage.addToStorage(UI.todoARR)
 })
+
+UI.removeToDo()
